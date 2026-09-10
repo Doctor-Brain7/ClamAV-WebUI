@@ -27,6 +27,7 @@ ClamAV WebUI provides a professional, minimalist interface for managing ClamAV a
 - Ultra-modern web interface with dark theme and vibrant red accents
 - Hierarchical typography and modular, minimal design components
 - Optimized for technical audiences
+- The ClamAV WebUI dashboard is served locally on port 19458 by default.
 
 **System Integration**
 - Automatic detection of installed components (clamav, clamav-daemon, clamav-freshclam, engine version, virus database)

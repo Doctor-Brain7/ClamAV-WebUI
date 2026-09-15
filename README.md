@@ -188,10 +188,6 @@ Code contributions are welcome. Please ensure:
 - Adherence to modular architecture principles
 - Cross-platform compatibility testing
 
-## License
-
-[Insert appropriate license - GPL, MIT, etc.]
-
 ## Support
 
 For issues, questions, or feature requests, please open an issue on the project repository.

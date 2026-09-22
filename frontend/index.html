@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ClamAV WebUI</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">C</span><span>ClamAV WebUI</span></div>
+      <span class="connection"><span class="status-dot"></span> Local service</span>
+    </header>
+    <main class="layout">
+      <aside class="sidebar">
+        <p class="eyebrow">Dashboard</p>
+        <nav>
+          <a class="nav-link active" href="#overview">Overview</a>
+          <a class="nav-link" href="#scan">Scan</a>
+          <a class="nav-link" href="#protection">Protection</a>
+          <a class="nav-link" href="#system">System</a>
+        </nav>
+        <div class="sidebar-footer">ClamAV WebUI <span>v1.0</span></div>
+      </aside>
+      <section class="content">
+        <div class="page-heading">
+          <div><p class="eyebrow">Security center</p><h1>Overview</h1></div>
+          <button class="button secondary" id="refreshButton">Refresh status</button>
+        </div>
+        <div id="notice" class="notice" role="status" hidden></div>
+        <section id="overview" class="stats-grid">
+          <article class="card stat-card"><span class="label">Engine version</span><strong id="engineVersion">Checking...</strong><span class="muted">ClamAV service</span></article>
+          <article class="card stat-card"><span class="label">Protection</span><strong id="protectionState">Unknown</strong><span class="muted">Real-time monitoring</span></article>
+          <article class="card stat-card"><span class="label">Daemon</span><strong id="daemonState">Unknown</strong><span class="muted">Service status</span></article>
+        </section>
+        <div class="columns">
+          <section id="scan" class="card panel">
+            <div class="panel-heading"><div><p class="eyebrow">Malware detection</p><h2>Start a scan</h2></div><span class="panel-icon">⌕</span></div>
+            <p class="muted">Scan a file or directory with the configured ClamAV engine.</p>
+            <form id="scanForm" class="scan-form">
+              <label for="scanTarget">Target path</label>
+              <div class="input-row"><input id="scanTarget" required placeholder="/home/user/Downloads"><button class="button" type="submit">Start scan</button></div>
+            </form>
+            <pre id="scanResult" class="result" hidden></pre>
+          </section>
+          <section id="protection" class="card panel">
+            <div class="panel-heading"><div><p class="eyebrow">Continuous monitoring</p><h2>Real-time protection</h2></div><span class="panel-icon">◉</span></div>
+            <p class="muted">Control the background protection daemon.</p>
+            <div class="button-row"><button class="button" data-realtime="on">Enable</button><button class="button secondary" data-realtime="off">Disable</button></div>
+            <div class="daemon-controls"><span class="label">Daemon controls</span><div class="button-row"><button class="text-button" data-daemon="start">Start</button><button class="text-button" data-daemon="status">Check status</button><button class="text-button danger-text" data-daemon="shutdown">Stop</button></div></div>
+          </section>
+        </div>
+        <section id="system" class="card panel">
+          <div class="panel-heading"><div><p class="eyebrow">Maintenance</p><h2>System tools</h2></div></div>
+          <div class="tools-grid">
+            <button class="tool" data-action="check"><strong>Check dependencies</strong><span>Verify ClamAV components</span></button>
+            <button class="tool" data-action="update"><strong>Update database</strong><span>Refresh virus definitions</span></button>
+            <button class="tool" data-action="history"><strong>View history</strong><span>Review recent scan activity</span></button>
+          </div>
+          <pre id="toolResult" class="result" hidden></pre>
+        </section>
+      </section>
+    </main>
+    <script src="/assets/app.js"></script>
+  </body>
+</html>

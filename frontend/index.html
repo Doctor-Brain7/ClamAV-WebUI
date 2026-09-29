@@ -3,64 +3,152 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#222222">
+    <meta name="description" content="Local ClamAV system status and antivirus controls.">
     <title>ClamAV WebUI</title>
-    <link rel="stylesheet" href="/assets/styles.css">
+    <link rel="icon" href="../icons/Square71x71Logo.png?v=1" type="image/png">
+    <link rel="stylesheet" href="./styles.css?v=3">
+    <script src="./app.js?v=3" defer></script>
   </head>
   <body>
     <header class="topbar">
-      <div class="brand"><span class="brand-mark">C</span><span>ClamAV WebUI</span></div>
-      <span class="connection"><span class="status-dot"></span> Local service</span>
+      <a class="brand" href="#overview" aria-label="ClamAV WebUI overview">
+        <img src="../icons/Square71x71Logo.png?v=1" alt="" class="brand-icon">
+        <span>ClamAV <strong>WebUI</strong></span>
+      </a>
+      <div class="topbar-tools">
+        <span class="connection"><span class="connection-dot"></span> Local system</span>
+        <button class="button button-secondary button-small theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false"><span aria-hidden="true">◐</span><span id="theme-label">Dark mode</span></button>
+        <button class="button button-primary button-small" id="refresh-button" type="button">Refresh status</button>
+      </div>
     </header>
-    <main class="layout">
-      <aside class="sidebar">
-        <p class="eyebrow">Dashboard</p>
+
+    <div class="layout">
+      <aside class="sidebar" aria-label="Main navigation">
+        <p class="nav-heading">Workspace</p>
         <nav>
-          <a class="nav-link active" href="#overview">Overview</a>
-          <a class="nav-link" href="#scan">Scan</a>
-          <a class="nav-link" href="#protection">Protection</a>
-          <a class="nav-link" href="#system">System</a>
+          <a class="nav-link active" href="#overview" data-view="overview"><span class="nav-icon">◫</span> Overview</a>
+          <a class="nav-link" href="#scan" data-view="scan"><span class="nav-icon">⌕</span> Scan</a>
+          <a class="nav-link" href="#history" data-view="history"><span class="nav-icon">↺</span> Scan history</a>
+          <a class="nav-link" href="#protection" data-view="protection"><span class="nav-icon">⬡</span> Protection</a>
+          <a class="nav-link" href="#settings" data-view="settings"><span class="nav-icon">⚙</span> Settings</a>
         </nav>
-        <div class="sidebar-footer">ClamAV WebUI <span>v1.0</span></div>
+        <div class="sidebar-note">
+          <span class="note-icon">i</span>
+          <p>This dashboard runs locally and uses your installed <code>clamweb</code> CLI.</p>
+        </div>
+        <div class="sidebar-footer">CLAMAV WEBUI <span>0.0.1 BETA</span></div>
       </aside>
-      <section class="content">
-        <div class="page-heading">
-          <div><p class="eyebrow">Security center</p><h1>Overview</h1></div>
-          <button class="button secondary" id="refreshButton">Refresh status</button>
-        </div>
-        <div id="notice" class="notice" role="status" hidden></div>
-        <section id="overview" class="stats-grid">
-          <article class="card stat-card"><span class="label">Engine version</span><strong id="engineVersion">Checking...</strong><span class="muted">ClamAV service</span></article>
-          <article class="card stat-card"><span class="label">Protection</span><strong id="protectionState">Unknown</strong><span class="muted">Real-time monitoring</span></article>
-          <article class="card stat-card"><span class="label">Daemon</span><strong id="daemonState">Unknown</strong><span class="muted">Service status</span></article>
-        </section>
-        <div class="columns">
-          <section id="scan" class="card panel">
-            <div class="panel-heading"><div><p class="eyebrow">Malware detection</p><h2>Start a scan</h2></div><span class="panel-icon">⌕</span></div>
-            <p class="muted">Scan a file or directory with the configured ClamAV engine.</p>
-            <form id="scanForm" class="scan-form">
-              <label for="scanTarget">Target path</label>
-              <div class="input-row"><input id="scanTarget" required placeholder="/home/user/Downloads"><button class="button" type="submit">Start scan</button></div>
-            </form>
-            <pre id="scanResult" class="result" hidden></pre>
-          </section>
-          <section id="protection" class="card panel">
-            <div class="panel-heading"><div><p class="eyebrow">Continuous monitoring</p><h2>Real-time protection</h2></div><span class="panel-icon">◉</span></div>
-            <p class="muted">Control the background protection daemon.</p>
-            <div class="button-row"><button class="button" data-realtime="on">Enable</button><button class="button secondary" data-realtime="off">Disable</button></div>
-            <div class="daemon-controls"><span class="label">Daemon controls</span><div class="button-row"><button class="text-button" data-daemon="start">Start</button><button class="text-button" data-daemon="status">Check status</button><button class="text-button danger-text" data-daemon="shutdown">Stop</button></div></div>
-          </section>
-        </div>
-        <section id="system" class="card panel">
-          <div class="panel-heading"><div><p class="eyebrow">Maintenance</p><h2>System tools</h2></div></div>
-          <div class="tools-grid">
-            <button class="tool" data-action="check"><strong>Check dependencies</strong><span>Verify ClamAV components</span></button>
-            <button class="tool" data-action="update"><strong>Update database</strong><span>Refresh virus definitions</span></button>
-            <button class="tool" data-action="history"><strong>View history</strong><span>Review recent scan activity</span></button>
+
+      <main class="main-content">
+        <section class="view" id="overview-view">
+          <div class="page-heading">
+            <div>
+              <p class="eyebrow">SYSTEM MONITOR</p>
+              <h1>System overview</h1>
+              <p class="page-subtitle">A clear view of your antivirus health and recent detections.</p>
+            </div>
+            <span class="last-checked" id="last-checked">Not checked yet</span>
           </div>
-          <pre id="toolResult" class="result" hidden></pre>
+
+          <div class="health-banner" id="health-banner" role="status">
+            <span class="health-indicator" id="health-indicator"></span>
+            <div><strong id="health-title">Checking system health</strong><p id="health-copy">Connecting to the local ClamAV service…</p></div>
+            <span class="health-chevron">›</span>
+          </div>
+
+          <div class="section-heading">
+            <div><p class="eyebrow">INSTALLATION</p><h2>Components</h2></div>
+            <span class="section-caption">Detected on this system</span>
+          </div>
+          <div class="component-grid" id="component-grid" aria-live="polite">
+            <article class="component-card loading-card"><span class="skeleton"></span><span class="skeleton short"></span></article>
+            <article class="component-card loading-card"><span class="skeleton"></span><span class="skeleton short"></span></article>
+            <article class="component-card loading-card"><span class="skeleton"></span><span class="skeleton short"></span></article>
+            <article class="component-card loading-card"><span class="skeleton"></span><span class="skeleton short"></span></article>
+          </div>
+
+          <div class="overview-grid">
+            <section class="panel">
+              <div class="panel-heading"><div><p class="eyebrow">ENGINE</p><h2>ClamAV status</h2></div><span class="status-pill neutral" id="daemon-pill">Checking</span></div>
+              <div class="detail-row"><span>clamweb version</span><strong id="engine-version">—</strong></div>
+              <div class="detail-row"><span>Daemon status</span><strong id="daemon-status">Checking…</strong></div>
+              <div class="detail-row"><span>Virus database</span><strong id="database-status">See system check</strong></div>
+              <div class="database-actions"><button class="button button-secondary button-small" id="update-database" type="button">Update definitions</button><span id="update-result">Updates the ClamAV virus database.</span></div>
+              <details class="command-output">
+                <summary>System check output</summary>
+                <pre id="check-output">Waiting for system check…</pre>
+              </details>
+            </section>
+            <section class="panel">
+              <div class="panel-heading"><div><p class="eyebrow">DETECTIONS</p><h2>Recent scan history</h2></div><a class="text-link" href="#history">View history <span aria-hidden="true">→</span></a></div>
+              <p class="panel-copy">Detection results reported by the installed clamweb tool.</p>
+              <pre class="history-preview" id="overview-history">Loading scan history…</pre>
+              <button class="button button-secondary" type="button" data-navigate="history">Open scan history</button>
+            </section>
+          </div>
         </section>
-      </section>
-    </main>
-    <script src="/assets/app.js"></script>
+
+        <section class="view hidden" id="scan-view">
+          <div class="page-heading"><div><p class="eyebrow">ANTIVIRUS</p><h1>Scan files</h1><p class="page-subtitle">Run ClamAV against a file or directory on this system.</p></div></div>
+          <section class="panel form-panel">
+            <div class="panel-heading"><div><p class="eyebrow">NEW SCAN</p><h2>Choose a target</h2></div></div>
+            <form id="scan-form">
+              <label for="scan-profile">Scan profile</label>
+              <select id="scan-profile" name="profile"><option value="quick">Quick scan — user files</option><option value="full">Full scan — entire filesystem</option><option value="custom">Custom path</option></select>
+              <label for="scan-path" id="scan-path-label">File or directory path</label>
+              <div class="input-action"><input id="scan-path" name="path" type="text" placeholder="/home or C:\Users" maxlength="4096" autocomplete="off"><button class="button button-primary" type="submit" id="scan-submit">Start scan <span aria-hidden="true">→</span></button></div>
+              <p class="field-hint" id="scan-path-hint">Scans run without elevated privileges. The full scan may report inaccessible system files; custom paths must be accessible to your account.</p>
+            </form>
+            <div class="result-box hidden" id="scan-result" role="status"><h3>Scan result</h3><pre></pre></div>
+          </section>
+          <div class="notice-card"><strong>Scan duration can vary.</strong><span>Large targets may take several minutes. Keep this page open to see the result.</span></div>
+        </section>
+
+        <section class="view hidden" id="history-view">
+          <div class="page-heading"><div><p class="eyebrow">ACTIVITY</p><h1>Scan history</h1><p class="page-subtitle">Review results returned by the clamweb command-line tool.</p></div><button class="button button-secondary" id="clear-history" type="button">Clear history</button></div>
+          <section class="panel"><div class="panel-heading"><div><p class="eyebrow">RECENT ACTIVITY</p><h2>History output</h2></div><button class="icon-button" id="history-refresh" type="button" aria-label="Refresh scan history" title="Refresh history">↻</button></div><pre class="history-output" id="history-output">Loading scan history…</pre></section>
+        </section>
+
+        <section class="view hidden" id="protection-view">
+          <div class="page-heading"><div><p class="eyebrow">REAL-TIME SECURITY</p><h1>Protection</h1><p class="page-subtitle">Manage the ClamAV daemon and real-time protection state.</p></div></div>
+          <div class="protection-grid">
+            <section class="panel"><div class="panel-heading"><div><p class="eyebrow">BACKGROUND SERVICE</p><h2>ClamAV daemon</h2></div><span class="status-pill neutral" id="protection-daemon-pill">Unknown</span></div><p class="panel-copy">Start, reboot, or shut down the daemon service.</p><div class="button-row"><button class="button button-primary" data-daemon="start" type="button">Start daemon</button><button class="button button-secondary" data-daemon="reboot" type="button">Reboot</button><button class="button button-danger-outline" data-daemon="shutdown" type="button">Shut down</button></div><pre class="inline-result" id="daemon-result">Daemon status will appear here.</pre></section>
+            <section class="panel"><div class="panel-heading"><div><p class="eyebrow">CONTINUOUS MONITORING</p><h2>Real-time protection</h2></div><span class="status-pill neutral" id="realtime-pill">Use the controls</span></div><p class="panel-copy">Enable or disable the real-time monitor using the clamweb CLI.</p><div class="button-row"><button class="button button-primary" data-realtime="on" type="button">Enable protection</button><button class="button button-secondary" data-realtime="off" type="button">Disable protection</button></div><pre class="inline-result" id="realtime-result">No changes made.</pre></section>
+          </div>
+        </section>
+
+        <section class="view hidden" id="settings-view">
+          <div class="page-heading"><div><p class="eyebrow">APPLICATION</p><h1>Settings</h1><p class="page-subtitle">Import, export, or clear preferences managed by clamweb.</p></div></div>
+          <section class="panel settings-panel"><div class="panel-heading"><div><p class="eyebrow">PREFERENCES</p><h2>Manage configuration</h2></div></div><p class="panel-copy">These actions are passed directly to the installed clamweb CLI.</p><div class="settings-actions"><article><div><strong>Import preferences</strong><p>Load preferences using the clamweb import workflow.</p></div><button class="button button-secondary" data-preference="import" type="button">Import</button></article><article><div><strong>Export preferences</strong><p>Export the current preferences using clamweb.</p></div><button class="button button-secondary" data-preference="export" type="button">Export</button></article><article><div><strong>Clear preferences</strong><p>Reset preferences managed by clamweb.</p></div><button class="button button-danger-outline" data-preference="clear" type="button">Clear</button></article></div><pre class="inline-result" id="preferences-result">No changes made.</pre></section>
+        </section>
+
+        <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
+        <footer class="page-footer"><span>ClamAV WebUI · Local system dashboard</span><button class="footer-link" id="license-open" type="button">MIT License</button></footer>
+      </main>
+    </div>
+
+    <dialog class="license-dialog" id="license-dialog" aria-labelledby="license-title">
+      <div class="dialog-heading"><div><p class="eyebrow">LEGAL</p><h2 id="license-title">MIT License</h2></div><button class="icon-button" id="license-close" type="button" aria-label="Close license">×</button></div>
+      <pre class="license-text">Copyright (c) 2026 Doctor-Brain7
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</pre>
+    </dialog>
   </body>
 </html>

@@ -1,1 +1,0 @@
-"""ClamAV WebUI backend package."""
